@@ -84,8 +84,8 @@ func (s *GracefulServer) ListenAndServeWithShutdown(ctx context.Context, opts ..
 }
 
 // ListenAndServeTLSWithShutdown starts a [http.Server] with the provided address, handler, certificate, and key.
-// It behaves similarly to ListenAndServeWithShutdown but for HTTPS connections.
-// For additional details, refer to the documentation of ListenAndServeWithShutdown.
+// It behaves similarly to [ListenAndServeWithShutdown] but for HTTPS connections.
+// For additional details, refer to the documentation of [ListenAndServeWithShutdown].
 func (s *GracefulServer) ListenAndServeTLSWithShutdown(ctx context.Context, certFile string, keyFile string, opts ...GracefulServerOption) error {
 	s.initialize(opts)
 
