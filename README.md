@@ -15,4 +15,4 @@ This package extends the functionality of the standard `http.Server` in Go to in
 
 ## Installation
 ```bash
-go get github.com/yourusername/gracefulserver
+go get github.com/aoliveti/gracefulhttp
