@@ -50,7 +50,7 @@ func TestGracefulServer_ListenAndServeWithShutdown(t *testing.T) {
 	})
 
 	t.Run("gracefully shutdown on time with cloudflare timeouts", func(t *testing.T) {
-		host := "localhost:34562"
+		host := "localhost:34563"
 
 		s := Bind(host, &delayedHandler{
 			delay: 500 * time.Millisecond,
@@ -73,7 +73,7 @@ func TestGracefulServer_ListenAndServeWithShutdown(t *testing.T) {
 	})
 
 	t.Run("forcefully shutdown after a timeout", func(t *testing.T) {
-		host := "localhost:34563"
+		host := "localhost:34564"
 
 		s := Bind(host, &delayedHandler{
 			delay: 10 * time.Second,
@@ -144,7 +144,7 @@ func TestGracefulServer_ListenAndServeTLSWithShutdown(t *testing.T) {
 	})
 
 	t.Run("gracefully shutdown on time with cloudflare configurations", func(t *testing.T) {
-		host := "localhost:34572"
+		host := "localhost:34573"
 
 		s := Bind(host, &delayedHandler{
 			delay: 500 * time.Millisecond,
@@ -181,7 +181,7 @@ func TestGracefulServer_ListenAndServeTLSWithShutdown(t *testing.T) {
 	})
 
 	t.Run("forcefully shutdown a timeout", func(t *testing.T) {
-		host := "localhost:34573"
+		host := "localhost:34574"
 
 		s := Bind(host, &delayedHandler{
 			delay: 10 * time.Second,
