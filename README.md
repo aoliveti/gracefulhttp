@@ -68,7 +68,7 @@ or by using the Bind() function:
 func Bind(addr string, handler http.Handler) *GracefulServer
 ```
 
-## Listening and serve
+## Listen and serve
 To start the HTTP server with the provided address and handler, you need to use this function:
 ```go
 func (s *GracefulServer) ListenAndServeWithShutdown(ctx context.Context, opts ...GracefulServerOption) error
