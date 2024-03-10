@@ -109,3 +109,7 @@ Before running the tests, a certificate and key are generated using OpenSSL and 
 The generated certificate and key are used for testing HTTPS functions.
 
 For detailed documentation on OpenSSL, visit https://www.openssl.org/
+
+## License
+
+The library is released under the MIT license. See [LICENSE](LICENSE) file.
