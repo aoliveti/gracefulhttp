@@ -3,9 +3,11 @@ package gracefulhttp
 import (
 	"context"
 	"crypto/tls"
+	"errors"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"net/http"
+	"os"
 	"testing"
 	"time"
 )
@@ -27,14 +29,9 @@ func TestGracefulServer_ListenAndServeWithShutdown(t *testing.T) {
 	t.Run("gracefully shutdown on time", func(t *testing.T) {
 		host := "localhost:34562"
 
-		s := GracefulServer{
-			Server: http.Server{
-				Addr: host,
-				Handler: &delayedHandler{
-					delay: 500 * time.Millisecond,
-				},
-			},
-		}
+		s := Bind(host, &delayedHandler{
+			delay: 500 * time.Millisecond,
+		})
 
 		ctx, cancel := context.WithCancel(context.Background())
 
@@ -52,17 +49,35 @@ func TestGracefulServer_ListenAndServeWithShutdown(t *testing.T) {
 		require.NoError(t, <-done)
 	})
 
+	t.Run("gracefully shutdown on time with cloudflare timeouts", func(t *testing.T) {
+		host := "localhost:34562"
+
+		s := Bind(host, &delayedHandler{
+			delay: 500 * time.Millisecond,
+		})
+
+		ctx, cancel := context.WithCancel(context.Background())
+
+		done := make(chan error, 1)
+		go func() {
+			done <- s.ListenAndServeWithShutdown(ctx, WithCloudflareTimeouts())
+		}()
+
+		r, err := http.Get("http://" + host)
+		require.NoError(t, err)
+		assert.Equal(t, http.StatusOK, r.StatusCode)
+
+		cancel()
+
+		require.NoError(t, <-done)
+	})
+
 	t.Run("forcefully shutdown after a timeout", func(t *testing.T) {
 		host := "localhost:34563"
 
-		s := GracefulServer{
-			Server: http.Server{
-				Addr: host,
-				Handler: &delayedHandler{
-					delay: 10 * time.Second,
-				},
-			},
-		}
+		s := Bind(host, &delayedHandler{
+			delay: 10 * time.Second,
+		})
 
 		ctx, cancel := context.WithCancel(context.Background())
 
@@ -87,19 +102,22 @@ func TestGracefulServer_ListenAndServeTLSWithShutdown(t *testing.T) {
 	const CertFile = "certs/cert.pem"
 	const KeyFile = "certs/key.pem"
 
-	t.Parallel()
+	if _, err := os.Stat(CertFile); errors.Is(err, os.ErrNotExist) {
+		t.Errorf("%s not found", CertFile)
+		return
+	}
+
+	if _, err := os.Stat(KeyFile); errors.Is(err, os.ErrNotExist) {
+		t.Errorf("%s not found", KeyFile)
+		return
+	}
 
 	t.Run("gracefully shutdown on time", func(t *testing.T) {
 		host := "localhost:34572"
 
-		s := GracefulServer{
-			Server: http.Server{
-				Addr: host,
-				Handler: &delayedHandler{
-					delay: 500 * time.Millisecond,
-				},
-			},
-		}
+		s := Bind(host, &delayedHandler{
+			delay: 500 * time.Millisecond,
+		})
 
 		ctx, cancel := context.WithCancel(context.Background())
 
@@ -125,17 +143,49 @@ func TestGracefulServer_ListenAndServeTLSWithShutdown(t *testing.T) {
 		require.NoError(t, <-done)
 	})
 
+	t.Run("gracefully shutdown on time with cloudflare configurations", func(t *testing.T) {
+		host := "localhost:34572"
+
+		s := Bind(host, &delayedHandler{
+			delay: 500 * time.Millisecond,
+		})
+
+		ctx, cancel := context.WithCancel(context.Background())
+
+		done := make(chan error, 1)
+		go func() {
+			done <- s.ListenAndServeTLSWithShutdown(
+				ctx,
+				CertFile,
+				KeyFile,
+				WithCloudflareTimeouts(),
+				WithCloudflareTLSConfig(),
+			)
+		}()
+
+		tr := &http.Transport{
+			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+		}
+
+		client := &http.Client{Transport: tr}
+		r, err := http.NewRequest(http.MethodGet, "https://"+host, nil)
+		require.NoError(t, err)
+
+		response, err := client.Do(r)
+		require.NoError(t, err)
+		assert.Equal(t, http.StatusOK, response.StatusCode)
+
+		cancel()
+
+		require.NoError(t, <-done)
+	})
+
 	t.Run("forcefully shutdown a timeout", func(t *testing.T) {
 		host := "localhost:34573"
 
-		s := GracefulServer{
-			Server: http.Server{
-				Addr: host,
-				Handler: &delayedHandler{
-					delay: 10 * time.Second,
-				},
-			},
-		}
+		s := Bind(host, &delayedHandler{
+			delay: 10 * time.Second,
+		})
 
 		ctx, cancel := context.WithCancel(context.Background())
 
