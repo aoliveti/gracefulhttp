@@ -1,5 +1,6 @@
 ## gracefulhttp
 ![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/aoliveti/gracefulhttp)
+[![codecov](https://codecov.io/gh/aoliveti/gracefulhttp/graph/badge.svg?token=j9a2QoWNA5)](https://codecov.io/gh/aoliveti/gracefulhttp)
 [![Go Reference](https://pkg.go.dev/badge/github.com/aoliveti/curling)](https://pkg.go.dev/github.com/aoliveti/gracefulhttp)
 [![Go Report Card](https://goreportcard.com/badge/github.com/aoliveti/gracefulhttp)](https://goreportcard.com/report/github.com/aoliveti/gracefulhttp)
 ![GitHub License](https://img.shields.io/github/license/aoliveti/gracefulhttp)
