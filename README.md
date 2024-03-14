@@ -6,7 +6,7 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/aoliveti/gracefulhttp)](https://goreportcard.com/report/github.com/aoliveti/gracefulhttp)
 ![GitHub License](https://img.shields.io/github/license/aoliveti/gracefulhttp)
 
-This package extends the functionality of the standard `http.Server` in Go to include best practice configurations and graceful shutdown.
+This package extends the functionality of the standard [http.Server](https://pkg.go.dev/net/http#Server) in Go to include best practice configurations and graceful shutdown.
 
 - Smoothly stop accepting new connections while processing existing requests to completion.
 - Set a customizable timeout for graceful shutdown, with a default of 5 seconds.
@@ -30,13 +30,13 @@ import (
 	"log"
 	"net/http"
 	"os/signal"
-	"syscall"
 
 	"github.com/aoliveti/gracefulhttp"
+	"golang.org/x/sys/unix"
 )
 
 func main() {
-	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
+	ctx, cancel := signal.NotifyContext(context.Background(), unix.SIGINT, unix.SIGTERM)
 	defer cancel()
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
@@ -78,7 +78,7 @@ If instead you need to start a server that accepts connections over HTTPS, you m
 ```go
 func (s *GracefulServer) ListenAndServeTLSWithShutdown(ctx context.Context, certFile string, keyFile string, opts ...GracefulServerOption) error
 ```
-It's possible to pass options to set timeouts and TLS configuration. Here's a summary table:
+It's possible to pass options to set timeouts and [TLS configuration](https://pkg.go.dev/crypto/tls#Config). Here's a summary table:
 
 | Option                  | Description                                                                                                       |
 |-------------------------|-------------------------------------------------------------------------------------------------------------------|
