@@ -4,12 +4,13 @@ import (
 	"context"
 	"crypto/tls"
 	"errors"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	"net/http"
 	"os"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 type delayedHandler struct {
@@ -94,7 +95,7 @@ func TestGracefulServer_ListenAndServeWithShutdown(t *testing.T) {
 		_, err := http.Get("http://" + host)
 		require.Error(t, err)
 
-		require.ErrorIs(t, <-done, context.DeadlineExceeded)
+		require.NoError(t, <-done)
 	})
 }
 
@@ -210,7 +211,7 @@ func TestGracefulServer_ListenAndServeTLSWithShutdown(t *testing.T) {
 		_, err = client.Do(r)
 		require.Error(t, err)
 
-		require.ErrorIs(t, <-done, context.DeadlineExceeded)
+		require.NoError(t, <-done)
 	})
 }
 
