@@ -4,9 +4,10 @@ import (
 	"context"
 	"crypto/tls"
 	"errors"
-	"golang.org/x/sync/errgroup"
 	"net/http"
 	"time"
+
+	"golang.org/x/sync/errgroup"
 )
 
 const (
@@ -80,7 +81,9 @@ func Bind(addr string, handler http.Handler) *GracefulServer {
 func (s *GracefulServer) ListenAndServeWithShutdown(ctx context.Context, opts ...GracefulServerOption) error {
 	s.initialize(opts)
 
-	return s.listenAndServe(ctx)
+	return s.listenAndServe(ctx, func() error {
+		return s.ListenAndServe()
+	})
 }
 
 // ListenAndServeTLSWithShutdown starts a [http.Server] with the provided address, handler, certificate, and key.
@@ -89,36 +92,17 @@ func (s *GracefulServer) ListenAndServeWithShutdown(ctx context.Context, opts ..
 func (s *GracefulServer) ListenAndServeTLSWithShutdown(ctx context.Context, certFile string, keyFile string, opts ...GracefulServerOption) error {
 	s.initialize(opts)
 
-	return s.listenAndServeTLS(ctx, certFile, keyFile)
+	return s.listenAndServe(ctx, func() error {
+		return s.ListenAndServeTLS(certFile, keyFile)
+	})
 }
 
-// listenAndServe invokes [http.ListenAndServe] until the context is canceled, then invokes the shutdown method.
-func (s *GracefulServer) listenAndServe(ctx context.Context) error {
+// listenAndServe invokes the listener until the context is canceled, then invokes the shutdown method.
+func (s *GracefulServer) listenAndServe(ctx context.Context, lsFn func() error) error {
 	g := errgroup.Group{}
 
 	g.Go(func() error {
-		if err := s.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
-			return err
-		}
-
-		return nil
-	})
-	g.Go(func() error {
-		<-ctx.Done()
-
-		return s.shutdown()
-	})
-
-	return g.Wait()
-}
-
-// listenAndServeTLS invokes [http.ListenAndServeTLS] with the supplied certificate and key files until the context is canceled,
-// then invokes the shutdown method.
-func (s *GracefulServer) listenAndServeTLS(ctx context.Context, certFile string, keyFile string) error {
-	g := errgroup.Group{}
-
-	g.Go(func() error {
-		if err := s.ListenAndServeTLS(certFile, keyFile); err != nil && !errors.Is(err, http.ErrServerClosed) {
+		if err := lsFn(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			return err
 		}
 
@@ -164,5 +148,9 @@ func (s *GracefulServer) shutdown() error {
 		}
 	})
 
-	return g.Wait()
+	if err := g.Wait(); !errors.Is(err, context.DeadlineExceeded) {
+		return err
+	}
+
+	return nil
 }

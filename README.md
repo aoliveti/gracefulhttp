@@ -26,7 +26,6 @@ package main
 
 import (
 	"context"
-	"errors"
 	"log"
 	"net/http"
 	"os/signal"
@@ -47,8 +46,7 @@ func main() {
 
 	log.Println("starting server...")
 
-	err := srv.ListenAndServeWithShutdown(ctx)
-	if err != nil && !errors.Is(err, context.DeadlineExceeded) {
+	if err := srv.ListenAndServeWithShutdown(ctx); err != nil {
 		log.Fatal(err)
 	}
 
