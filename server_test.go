@@ -234,8 +234,9 @@ func TestBind(t *testing.T) {
 			},
 			want: &GracefulServer{
 				Server: http.Server{
-					Addr:    "localhost:45678",
-					Handler: handler,
+					Addr:              "localhost:45678",
+					Handler:           handler,
+					ReadHeaderTimeout: defaultReadHeaderTimeout,
 				},
 			},
 		},

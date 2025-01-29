@@ -65,8 +65,9 @@ type GracefulServer struct {
 func Bind(addr string, handler http.Handler) *GracefulServer {
 	return &GracefulServer{
 		Server: http.Server{
-			Addr:    addr,
-			Handler: handler,
+			Addr:              addr,
+			Handler:           handler,
+			ReadHeaderTimeout: defaultReadHeaderTimeout,
 		},
 	}
 }

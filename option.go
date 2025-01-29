@@ -37,7 +37,13 @@ func WithCloudflareTimeouts() GracefulServerOption {
 func WithCloudflareTLSConfig() GracefulServerOption {
 	return func(s *GracefulServer) {
 		if s.TLSConfig == nil {
-			s.TLSConfig = &tls.Config{}
+			s.TLSConfig = &tls.Config{
+				MinVersion:       defaultTLSMinVersion,
+				CurvePreferences: defaultTLSCurvePreferences,
+				CipherSuites:     defaultTLSCipherSuites,
+			}
+
+			return
 		}
 
 		s.TLSConfig.MinVersion = defaultTLSMinVersion
