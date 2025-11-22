@@ -12,12 +12,9 @@ type GracefulServerOption func(s *GracefulServer)
 // will be forcibly closed.
 func WithShutdownTimeout(duration time.Duration) GracefulServerOption {
 	return func(s *GracefulServer) {
-		if duration <= 0 {
-			s.gracefulTimeout = defaultGracefulTimeout
-			return
+		if duration > 0 {
+			s.gracefulTimeout = duration
 		}
-
-		s.gracefulTimeout = duration
 	}
 }
 
@@ -38,12 +35,8 @@ func WithCloudflareTLSConfig() GracefulServerOption {
 	return func(s *GracefulServer) {
 		if s.TLSConfig == nil {
 			s.TLSConfig = &tls.Config{
-				MinVersion:       defaultTLSMinVersion,
-				CurvePreferences: defaultTLSCurvePreferences,
-				CipherSuites:     defaultTLSCipherSuites,
+				MinVersion: defaultTLSMinVersion,
 			}
-
-			return
 		}
 
 		s.TLSConfig.MinVersion = defaultTLSMinVersion

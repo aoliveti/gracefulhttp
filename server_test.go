@@ -128,6 +128,7 @@ func TestGracefulServer_ListenAndServeTLSWithShutdown(t *testing.T) {
 		}()
 
 		tr := &http.Transport{
+			//nolint:gosec // InsecureSkipVerify is required for self-signed certs in tests
 			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 		}
 
@@ -165,6 +166,7 @@ func TestGracefulServer_ListenAndServeTLSWithShutdown(t *testing.T) {
 		}()
 
 		tr := &http.Transport{
+			//nolint:gosec // InsecureSkipVerify is required for self-signed certs in tests
 			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 		}
 
@@ -201,6 +203,7 @@ func TestGracefulServer_ListenAndServeTLSWithShutdown(t *testing.T) {
 		}()
 
 		tr := &http.Transport{
+			//nolint:gosec // InsecureSkipVerify is required for self-signed certs in tests
 			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 		}
 

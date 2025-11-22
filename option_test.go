@@ -81,7 +81,9 @@ func TestWithShutdownTimeout(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			s := GracefulServer{}
+			s := GracefulServer{
+				gracefulTimeout: defaultGracefulTimeout,
+			}
 			opt := WithShutdownTimeout(tt.args.duration)
 			opt(&s)
 

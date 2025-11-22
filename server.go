@@ -100,7 +100,7 @@ func (s *GracefulServer) ListenAndServeTLSWithShutdown(ctx context.Context, cert
 
 // listenAndServe invokes the listener until the context is canceled, then invokes the shutdown method.
 func (s *GracefulServer) listenAndServe(ctx context.Context, lsFn func() error) error {
-	g := errgroup.Group{}
+	g, gCtx := errgroup.WithContext(ctx)
 
 	g.Go(func() error {
 		if err := lsFn(); err != nil && !errors.Is(err, http.ErrServerClosed) {
@@ -110,7 +110,7 @@ func (s *GracefulServer) listenAndServe(ctx context.Context, lsFn func() error) 
 		return nil
 	})
 	g.Go(func() error {
-		<-ctx.Done()
+		<-gCtx.Done()
 
 		return s.shutdown()
 	})
@@ -127,29 +127,22 @@ func (s *GracefulServer) initialize(opts []GracefulServerOption) {
 	}
 }
 
-// shutdown invokes [http.Shutdown], and if there is a timeout,
-// it will forcibly close the active connections using [http.Close].
+// shutdown attempts a graceful shutdown. If the timeout is reached,
+// it forcibly closes the underlying listener and connections.
 func (s *GracefulServer) shutdown() error {
-	ctxTimeout, cancel := context.WithTimeout(context.Background(), s.gracefulTimeout)
+	shutdownCtx, cancel := context.WithTimeout(context.Background(), s.gracefulTimeout)
 	defer cancel()
 
-	done := make(chan struct{}, 1)
-
-	g, groupCtx := errgroup.WithContext(ctxTimeout)
-	g.Go(func() error {
-		defer close(done)
-		return s.Shutdown(groupCtx)
-	})
-	g.Go(func() error {
-		select {
-		case <-groupCtx.Done():
-			return s.Close()
-		case <-done:
+	// Attempt a graceful shutdown
+	err := s.Shutdown(shutdownCtx)
+	if err != nil {
+		if errors.Is(err, context.DeadlineExceeded) {
+			// Timeout reached; force close all connections.
+			// We ignore the error from Close() as we are already in an error state.
+			_ = s.Close()
 			return nil
 		}
-	})
-
-	if err := g.Wait(); !errors.Is(err, context.DeadlineExceeded) {
+		// Return other errors (e.g., listener errors)
 		return err
 	}
 
