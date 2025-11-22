@@ -8,7 +8,7 @@ build:
 	go build -v ./...
 
 test: generate-keys
-	go test -race -coverprofile=coverage.txt -covermode=atomic
+	go test -race -coverprofile=coverage.txt -covermode=atomic ./...
 
 generate-keys:
 	# Generate the TLS certificate and private key.
